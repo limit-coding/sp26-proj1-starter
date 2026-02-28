@@ -24,7 +24,57 @@ static void update_head(game_t *game, unsigned int snum);
 /* Task 1 */
 game_t *create_default_game() {
   // TODO: Implement this function.
-  return NULL;
+  //task1要求：生成地图，初始化数据，生成蛇
+  game_t* game=malloc(sizeof(game_t));
+  if(game==NULL) return NULL;
+  //初始化地图信息
+  game->num_rows=18;
+  //首先初始化指针序列，等待下次继续初始化
+  game->board=malloc(sizeof(char*)*game->num_rows);
+  //安全保障
+  if(game->board==NULL) {
+    free(game);
+    return NULL;
+  }
+  //关于蛇的初始化
+  game->num_snakes=1;
+  game->snakes=malloc(sizeof(snake_t));
+  char* default_layout[]={
+    "####################\n",
+    "#                  #\n",
+    "# d>D    *         #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "#                  #\n",
+    "####################\n"
+    
+  };
+  //先申请内存，然后复制board信息
+  for(int i=0;i<game->num_rows;++i){
+    game->board[i]=malloc(sizeof(char)*22);
+    strcpy(game->board[i],default_layout[i]);
+  }
+  //初始化蛇的位置
+  game->snakes[0].head_col=4;
+  game->snakes[0].head_row=2;
+  game->snakes[0].tail_col=2;
+  game->snakes[0].tail_row=2;
+  game->snakes[0].live=true;
+
+  
+  
+  return game;
 }
 
 /* Task 2 */
