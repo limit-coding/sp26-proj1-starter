@@ -213,9 +213,9 @@ static unsigned int get_next_col(unsigned int cur_col, char c) {
 */
 static char next_square(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
-  snake_t snake=game->snakes[snum];
-  unsigned int cur_row=game->snakes->head_row;
-  unsigned int cur_col=game->snakes->head_col;
+  snake_t *snake=&(game->snakes[snum]);
+  unsigned int cur_row=snake->head_row;
+  unsigned int cur_col=snake->head_col;
   char head_char=get_board_at(game,cur_row,cur_col);
   unsigned int next_row=get_next_row(cur_row,head_char);
   unsigned int next_col=get_next_col(cur_col,head_char);
