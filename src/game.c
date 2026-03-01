@@ -335,13 +335,52 @@ void update_game(game_t *game, int (*add_food)(game_t *game)) {
 /* Task 5.1 */
 char *read_line(FILE *fp) {
   // TODO: Implement this function.
-  return NULL;
+  int capability=128;
+  int length=0;
+  char* buffer=malloc(capability);
+  if(buffer==NULL) return NULL;
+  while(fgets(buffer+length,capability-length,fp)!=NULL){
+    char* nl=strchr(buffer+length,'\n');
+    if(nl){
+      return buffer;
+    }
+    length=strlen(buffer);
+    capability=capability*2;
+    buffer=realloc(buffer,capability);
+    if(buffer==NULL) return NULL;
+
+  }
+  if(length==0) {
+    free(buffer);
+    return NULL;
+  }
+  char* result=malloc(length+1);
+  if(result==NULL) return NULL;
+  strcpy(result,buffer);
+  return result;
 }
 
 /* Task 5.2 */
 game_t *load_board(FILE *fp) {
   // TODO: Implement this function.
-  return NULL;
+  //通篇好多防御性编程，比如说申请内存失败咋办，这种情况属于是说系统不让分配内存了，
+  //所以所以分配内存的后面，都带一个如果没分配成功要返回NULL
+  //malloc->read_line->realloc
+  game_t *game=malloc(sizeof(game_t));
+  if(game==NULL) return NULL;
+  game->num_rows=0;
+  game->board=NULL;
+  game->num_snakes=0;
+  game->snakes=NULL;
+  char* line=NULL;
+  while((line=read_line(fp))!=NULL){
+    char** temp=realloc(game->board,sizeof(char*)*(game->num_rows+1));
+    if(temp==NULL) return NULL;
+    game->board=temp;
+    game->board[game->num_rows]=line;
+    game->num_rows++;
+  }
+  return game;
 }
 
 /*
