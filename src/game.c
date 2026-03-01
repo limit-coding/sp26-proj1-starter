@@ -93,6 +93,10 @@ void free_game(game_t *game) {
 /* Task 3 */
 void print_board(game_t *game, FILE *fp) {
   // TODO: Implement this function.
+  if(game==NULL || fp==NULL) return;
+  for(int i=0;i<game->num_rows;++i){
+    fprintf(fp,"%s",game->board[i]);
+  }
   return;
 }
 
@@ -129,6 +133,8 @@ static void set_board_at(game_t *game, unsigned int row, unsigned int col, char 
 */
 static bool is_tail(char c) {
   // TODO: Implement this function.
+  //wasd
+  if(c!='w' && c!='a' && c!='s' && c!='d') return false;
   return true;
 }
 
@@ -139,6 +145,8 @@ static bool is_tail(char c) {
 */
 static bool is_head(char c) {
   // TODO: Implement this function.
+  //WASDx
+  if(c!='W' && c!='A' && c!='S' && c!='D' && c!='x') return false;
   return true;
 }
 
@@ -148,18 +156,11 @@ static bool is_head(char c) {
 */
 static bool is_snake(char c) {
   // TODO: Implement this function.
+  //wasd^<v>WASDx
+  if(c!='w'&&c!='a'&& c!='s' && c!='d' && c!='^' && c!='<' && c!='v' && c!='>' && c!='W' && c!='A' && c!='S' && c!='D'&& c!='x') return false;
   return true;
 }
 
-/*
-  Converts a character in the snake's body ("^<v>")
-  to the matching character representing the snake's
-  tail ("wasd").
-*/
-static char body_to_tail(char c) {
-  // TODO: Implement this function.
-  return '?';
-}
 
 /*
   Converts a character in the snake's head ("WASD")
@@ -168,6 +169,10 @@ static char body_to_tail(char c) {
 */
 static char head_to_body(char c) {
   // TODO: Implement this function.
+  if(c=='W') return '^';
+  if(c=='A') return '<';
+  if(c=='S') return 'v';
+  if(c=='D') return '>';
   return '?';
 }
 
@@ -178,6 +183,10 @@ static char head_to_body(char c) {
 */
 static unsigned int get_next_row(unsigned int cur_row, char c) {
   // TODO: Implement this function.
+  if(c=='v' || c=='s' || c=='S') return cur_row+1;
+  if(c=='^' || c=='w' || c=='W') {
+    return (cur_row>0) ? cur_row-1:0;
+  }
   return cur_row;
 }
 
@@ -188,6 +197,10 @@ static unsigned int get_next_row(unsigned int cur_row, char c) {
 */
 static unsigned int get_next_col(unsigned int cur_col, char c) {
   // TODO: Implement this function.
+  if(c=='>' || c=='d' || c=='D') return cur_col+1;
+  if(c=='<' || c=='a' || c=='A') {
+    return (cur_col>0) ? cur_col-1:0;
+  }
   return cur_col;
 }
 
@@ -200,7 +213,13 @@ static unsigned int get_next_col(unsigned int cur_col, char c) {
 */
 static char next_square(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
-  return '?';
+  snake_t snake=game->snakes[snum];
+  unsigned int cur_row=game->snakes->head_row;
+  unsigned int cur_col=game->snakes->head_col;
+  char head_char=get_board_at(game,cur_row,cur_col);
+  unsigned int next_row=get_next_row(cur_row,head_char);
+  unsigned int next_col=get_next_col(cur_col,head_char);
+  return get_board_at(game,next_row,next_col);
 }
 
 /*
@@ -216,6 +235,27 @@ static char next_square(game_t *game, unsigned int snum) {
 */
 static void update_head(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
+  //这里使用引用是必须的
+  //创建引用
+  //新的头 new_col new_row
+  //新的身体 
+  snake_t* snake=&(game->snakes[snum]);
+  unsigned int cur_row=snake->head_row;
+  unsigned int cur_col=snake->head_col;
+  char head_char=get_board_at(game,cur_row,cur_col);
+
+  int next_row=get_next_row(cur_row,head_char);
+  int next_col=get_next_col(cur_col,head_char);
+  char new_body=head_to_body(head_char);
+  //snake仅仅是一个坐标，game才是整个图纸
+  //更新头 头的字符是不变的，之前是D，之后还是D
+  set_board_at(game, next_row, next_col , head_char) ;
+  //更新身体  之前是S，
+  set_board_at(game, cur_row, cur_col, new_body) ;
+
+  snake->head_col=next_col;
+  snake->head_row=next_row;
+
   return;
 }
 
@@ -231,12 +271,36 @@ static void update_head(game_t *game, unsigned int snum) {
 */
 static void update_tail(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
+  snake_t* snake=&(game->snakes[snum]);
+  //我已经获取了尾巴的坐标和char
+  unsigned int cur_col=snake->tail_col;
+  unsigned int cur_row=snake->tail_row;
+  char tail_char=get_board_at(game,cur_row,cur_col);
+
+  //现在需要获取下一个位置的坐标(既是新的尾巴，也是最后一个body)
+  unsigned int next_col=get_next_col(cur_col,tail_char);
+  unsigned int next_row=get_next_row(cur_row,tail_char);
+  char body_char=get_board_at(game,next_col,next_row);
+
+  //需要知道新的body在哪
+  unsigned int next_next_col=get_next_col(next_col,body_char);
+  unsigned int next_next_row=get_next_row(next_row,body_char);
+  char new_body_char=get_board_at(game,next_next_col,next_next_row);
+
+  //更新尾巴
+  set_board_at(game,next_row,next_col,body_char);
+  //更新最后一个body
+  set_board_at(game,next_next_row,next_next_col,new_body_char);
+
+  snake->tail_col=next_col;
+  snake->tail_row=next_row;
   return;
 }
 
 /* Task 4.5 */
 void update_game(game_t *game, int (*add_food)(game_t *game)) {
   // TODO: Implement this function.
+
   return;
 }
 
