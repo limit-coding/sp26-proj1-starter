@@ -269,6 +269,14 @@ static void update_head(game_t *game, unsigned int snum) {
 
   ...in the snake struct: update the row and col of the tail
 */
+
+static char body_to_tail(char c){
+  if(c=='^') return 'w';
+  if(c=='<') return 'a';
+  if(c=='v') return 's';
+  if(c=='>') return 'd';
+  return '?';
+}
 static void update_tail(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
   snake_t* snake=&(game->snakes[snum]);
@@ -280,17 +288,13 @@ static void update_tail(game_t *game, unsigned int snum) {
   //现在需要获取下一个位置的坐标(既是新的尾巴，也是最后一个body)
   unsigned int next_col=get_next_col(cur_col,tail_char);
   unsigned int next_row=get_next_row(cur_row,tail_char);
-  char body_char=get_board_at(game,next_col,next_row);
+  char body_char=get_board_at(game,next_row,next_col);
 
-  //需要知道新的body在哪
-  unsigned int next_next_col=get_next_col(next_col,body_char);
-  unsigned int next_next_row=get_next_row(next_row,body_char);
-  char new_body_char=get_board_at(game,next_next_col,next_next_row);
-
+  char new_tail=body_to_tail(body_char);
   //更新尾巴
-  set_board_at(game,next_row,next_col,body_char);
-  //更新最后一个body
-  set_board_at(game,next_next_row,next_next_col,new_body_char);
+  set_board_at(game,next_row,next_col,new_tail);
+  //把过去的尾巴变成空格
+  set_board_at(game,cur_row,cur_col,' ');
 
   snake->tail_col=next_col;
   snake->tail_row=next_row;
