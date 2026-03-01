@@ -320,7 +320,8 @@ void update_game(game_t *game, int (*add_food)(game_t *game)) {
     //吃到食物了，头动，身体不动
     else if(next_char=='*'){
       update_head(game,i);
-      add_food(game);
+      //对add_food做空指针检查
+      if(add_food) add_food(game);
     }
     //正常前后一起移动就行
     else {
@@ -393,11 +394,55 @@ game_t *load_board(FILE *fp) {
 */
 static void find_head(game_t *game, unsigned int snum) {
   // TODO: Implement this function.
+  unsigned int cur_col=game->snakes[snum].tail_col;
+  unsigned int cur_row=game->snakes[snum].tail_row;
+  char tail_char= get_board_at(game,cur_row,cur_col);
+  //查看当前格子的字符,需要找到头
+  while(!is_head(tail_char)){
+    
+    //>v^<
+    //可以使用else if 优化，因为进入一个分支以后，不会进入下一个分支，可以减少判断
+    if(tail_char=='>') cur_col++;
+    else if(tail_char=='v') cur_row++;
+    else if(tail_char=='^') cur_row--;
+    else if(tail_char=='<') cur_col--;
+    tail_char=get_board_at(game,cur_row,cur_col);
+
+  }
+  game->snakes[snum].head_row=cur_row;
+  game->snakes[snum].head_col=cur_col;
+
+
   return;
 }
 
 /* Task 6.2 */
 game_t *initialize_snakes(game_t *game) {
   // TODO: Implement this function.
-  return NULL;
+  game->num_snakes=0;
+  for(int i=0;i<game->num_rows;++i){
+    for(int j=0;j<strlen(game->board[i]);++j){
+      //g, w, a, s, d
+      //只统计蛇尾，原因是如果统计蛇身体，碰到任意一个位置，都会加一，会超
+      //也可以用board[i][j]替代这个函数
+      if(is_tail(get_board_at(game,i,j))) game->num_snakes++;
+    }
+  }
+  game->snakes=malloc(sizeof(snake_t)* game->num_snakes);
+
+  unsigned int snum=0;
+  for(int i=0;i<game->num_rows;++i){
+    for(int j=0;j<strlen(game->board[i]);++j){
+      //g, w, a, s, d
+      if(is_tail(game->board[i][j])) {
+        game->snakes[snum].tail_col=j;
+        game->snakes[snum].tail_row=i;
+        find_head(game,snum);
+        game->snakes->live=true;
+        snum++;
+      }
+    }
+  }
+
+  return game;
 }
