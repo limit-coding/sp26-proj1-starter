@@ -304,6 +304,30 @@ static void update_tail(game_t *game, unsigned int snum) {
 /* Task 4.5 */
 void update_game(game_t *game, int (*add_food)(game_t *game)) {
   // TODO: Implement this function.
+  //感觉这个next_suqare()这个函数调用有点问题
+  for(unsigned int i=0;i<game->num_snakes;i++){
+    char next_char=next_square(game,i);
+    //^<v>
+    //这个意味着这个蛇死了,头不动，身体不动，仅仅头换成x
+    if(next_char=='#' || is_snake(next_char)){
+      
+      unsigned int head_row=game->snakes[i].head_row;
+      unsigned int head_col=game->snakes[i].head_col;
+      game->snakes[i].live=false;
+      set_board_at(game,head_row,head_col,'x');
+    }
+    //elif是python的写法
+    //吃到食物了，头动，身体不动
+    else if(next_char=='*'){
+      update_head(game,i);
+      add_food(game);
+    }
+    //正常前后一起移动就行
+    else {
+      update_head(game,i);
+      update_tail(game,i);
+    }
+  }
 
   return;
 }
