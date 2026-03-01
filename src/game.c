@@ -402,10 +402,10 @@ static void find_head(game_t *game, unsigned int snum) {
     
     //>v^<
     //可以使用else if 优化，因为进入一个分支以后，不会进入下一个分支，可以减少判断
-    if(tail_char=='>') cur_col++;
-    else if(tail_char=='v') cur_row++;
-    else if(tail_char=='^') cur_row--;
-    else if(tail_char=='<') cur_col--;
+    if(tail_char=='>' || tail_char=='d') cur_col++;
+    else if(tail_char=='v' || tail_char=='s') cur_row++;
+    else if(tail_char=='^' || tail_char=='w') cur_row--;
+    else if(tail_char=='<' || tail_char=='a') cur_col--;
     tail_char=get_board_at(game,cur_row,cur_col);
 
   }
@@ -438,7 +438,7 @@ game_t *initialize_snakes(game_t *game) {
         game->snakes[snum].tail_col=j;
         game->snakes[snum].tail_row=i;
         find_head(game,snum);
-        game->snakes->live=true;
+        game->snakes[snum].live=true;
         snum++;
       }
     }
